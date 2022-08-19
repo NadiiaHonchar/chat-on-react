@@ -1,19 +1,22 @@
 import React, { useState } from "react";
-import socket from "../socket";
 import axios from "axios";
 
-function JoinBlock() {
+function JoinBlock({ onLogin }) {
   const [roomID, setRoomID] = useState("");
   const [userName, setUserName] = useState("");
+  const [isLoading, setLoading] = useState(false);
 
-  const onEnter = () => {
+  const onEnter = async () => {
     if (!roomID || !userName) {
       alert("Pleas, enter your ID or name");
     }
-    axios.post("http://localhost:5000/rooms", {
+    const obj = {
       roomID,
       userName,
-    });
+    }
+    setLoading(true);
+    await axios.post("http://localhost:5000/rooms", obj);
+    onLogin(obj);
   };
   return (
     <div className="join-block">
@@ -29,8 +32,12 @@ function JoinBlock() {
         value={userName}
         onChange={(e) => setUserName(e.target.value)}
       ></input>
-      <button className="btn" onClick={onEnter}>
-        ENTER
+      <button
+        disabled={isLoading}
+        className="btn btn-success"
+        onClick={onEnter}
+      >
+        {isLoading ? "sign in..." : "sign in"}
       </button>
     </div>
   );
