@@ -1,47 +1,58 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import socket from "../socket";
 
-function Chat({users, messages}) {
-  const [messageValue, setMessageValue] = useState("");
+function Chat({ users, messages, userName, roomId, onAddMessage }) {
+  const [messageValue, setMessageValue] = useState('');
+  const messagesRef = useRef(null);
+
+  const onSendMessage = () => {
+    socket.emit('ROOM:NEW_MESSAGE', {
+      userName,
+      roomId,
+      text: messageValue,
+    });
+    onAddMessage({ userName, text: messageValue });
+    setMessageValue('');
+  };
+
+ useEffect(() => {
+    messagesRef.current.scrollTo(0, 99999);
+  }, [messages]);
 
   return (
     <div className="chat">
       <div className="chat-users">
-        <b>Users ({users.length})</b>
+        Room: <b>{roomId}</b>
+        <hr />
+        <b>Online ({users.length}):</b>
         <ul>
-          {users.map((name)=>(<li key={name}>{name}</li>))}
+          {users.map((name) => (
+            <li key={name}>{name}</li>
+          ))}
         </ul>
       </div>
       <div className="chat-messages">
-        <div className="messages">
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi, ex.
-            Ab reiciendis dolorum neque quo quaerat corporis voluptatum debitis?
-            In minus culpa quia! Quas accusamus et, ut dolorem modi dolor?
-          </p>
-          <div>
-            <span>Test user</span>
-          </div>
+        <div ref={messagesRef} className="messages">
+          {messages.map((message,index) => (
+            <div key={index} className="message">
+              <p>{message.text}</p>
+              <div>
+                <span>{message.userName}</span>
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="messages">
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi, ex.
-            Ab reiciendis dolorum neque quo quaerat corporis voluptatum debitis?
-            In minus culpa quia! Quas accusamus et, ut dolorem modi dolor?
-          </p>
-          <div>
-            <span>Test user</span>
-          </div>
-        </div>
+        <form>
+          <textarea
+            value={messageValue}
+            onChange={(e) => setMessageValue(e.target.value)}
+            className="form-control"
+            rows="3"></textarea>
+          <button onClick={onSendMessage} type="button" className="btn btn-primary">
+            Sent
+          </button>
+        </form>
       </div>
-      <form>
-        <textarea
-          value={messageValue}
-          onChange={(e) => setMessageValue(e.target.value)}
-          className="form-control"
-          rows='3'
-        ></textarea>
-        <button type="button" className="btn btn-primery"> Send</button>
-      </form>
     </div>
   );
 }

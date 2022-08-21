@@ -2,44 +2,42 @@ import React, { useState } from "react";
 import axios from "axios";
 
 function JoinBlock({ onLogin }) {
-  const [roomID, setRoomID] = useState("");
-  const [userName, setUserName] = useState("");
+  const [roomId, setRoomId] = useState('');
+  const [userName, setUserName] = useState('');
   const [isLoading, setLoading] = useState(false);
 
   const onEnter = async () => {
-    if (!roomID || !userName) {
-      alert("Pleas, enter your ID or name");
+    if (!roomId || !userName) {
+      return alert('Please? enter roomId and name');
     }
     const obj = {
-      roomID,
+      roomId,
       userName,
-    }
+    };
     setLoading(true);
     await axios.post("http://localhost:5000/rooms", obj);
     onLogin(obj);
   };
+
   return (
     <div className="join-block">
       <input
         type="text"
         placeholder="Room ID"
-        value={roomID}
-        onChange={(e) => setRoomID(e.target.value)}
-      ></input>
+        value={roomId}
+        onChange={(e) => setRoomId(e.target.value)}
+      />
       <input
         type="text"
         placeholder="Your name"
         value={userName}
         onChange={(e) => setUserName(e.target.value)}
-      ></input>
-      <button
-        disabled={isLoading}
-        className="btn btn-success"
-        onClick={onEnter}
-      >
-        {isLoading ? "sign in..." : "sign in"}
+      />
+      <button disabled={isLoading} onClick={onEnter} className="btn btn-success">
+        {isLoading ? 'Enter...' : 'Enter'}
       </button>
     </div>
   );
 }
+
 export default JoinBlock;

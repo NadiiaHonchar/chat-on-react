@@ -1,19 +1,15 @@
 import React, { useEffect, useReducer } from "react";
-import "./App.css";
-// import io from 'socket.io-client';
-import JoinBlock from "./components/JoinBlock";
-import Chat from "./components/Chat";
 import axios from "axios";
+import "./App.css";
 import reducer from "./reducer";
 import socket from "./socket";
-
-// const socket =io('http://localhost:5000/', { transports: ['websocket'] });
-// const socket =io();
+import JoinBlock from "./components/JoinBlock";
+import Chat from "./components/Chat";
 
 function App() {
   const [state, dispatch] = useReducer(reducer, {
     joined: false,
-    roomID: null,
+    roomId: null,
     userName: null,
     users: [],
     messages: [],
@@ -25,8 +21,13 @@ function App() {
       payload: obj,
     });
     socket.emit("ROOM:JOIN", obj);
-    const { data } = await axios.get(`http://localhost:5000/rooms/${obj.roomID}`);
-    setUsers(data.users)
+    const { data } = await axios.get(
+      `http://localhost:5000/rooms/${obj.roomId}`
+    );
+    dispatch({
+      type: "SET_DATA",
+      payload: data,
+    });
   };
 
   const setUsers = (users) => {
@@ -36,19 +37,26 @@ function App() {
     });
   };
 
+  const addMessage = (message) => {
+    dispatch({
+      type: "NEW_MESSAGE",
+      payload: message,
+    });
+  };
+
   useEffect(() => {
-    // socket.on("ROOM:JOINED", setUsers);
     socket.on("ROOM:SET_USERS", setUsers);
+    socket.on("ROOM:NEW_MESSAGE", addMessage);
   }, []);
-  // const connectSocket = ()=>{
-  //   io('http://localhost:5000/', { transports: ['websocket'] });
-  // }
+
+  window.socket = socket;
+
   return (
     <div className="wrapper">
       {!state.joined ? (
-        <JoinBlock onLogin={onLogin}></JoinBlock>
+        <JoinBlock onLogin={onLogin} />
       ) : (
-        <Chat {...state}></Chat>
+        <Chat {...state} onAddMessage={addMessage} />
       )}
     </div>
   );
